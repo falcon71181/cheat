@@ -1,174 +1,145 @@
-#include <iostream>
-using namespace std;
-struct Node {
-   int data;
-   struct Node *next;
-};
-struct Node* head = NULL;
-void insert(int new_data) {
-   struct Node* new_node = (struct Node*) malloc(sizeof(struct Node));
-   new_node->data = new_data;
-   new_node->next = head;
-   head = new_node;
-}
-void display() {
-   struct Node* ptr;
-   ptr = head;
-   while (ptr != NULL) {
-      cout<< ptr->data <<" ";
-      ptr = ptr->next;
-   }
-}
-int main() {
-   insert(3);
-   insert(1);
-   insert(7);
-   insert(2);
-   insert(9);
-   cout<<"The linked list is: ";
-   display();
-   return 0;
-}
-#include <iostream>
+// C program to convert infix expression to postfix
 
-using namespace std;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-struct Node {
-    int data;
-    struct Node * next;
+// Stack type
+struct Stack {
+	int top;
+	unsigned capacity;
+	int* array;
 };
 
-void display(struct Node *head){
-    struct Node *ptr = head;
-    while(ptr!=NULL){
-        cout<<ptr->data<<endl;
-        ptr=ptr->next;
-    }
+// Stack Operations
+struct Stack* createStack(unsigned capacity)
+{
+	struct Stack* stack
+		= (struct Stack*)malloc(sizeof(struct Stack));
+
+	if (!stack)
+		return NULL;
+
+	stack->top = -1;
+	stack->capacity = capacity;
+
+	stack->array
+		= (int*)malloc(stack->capacity * sizeof(int));
+
+	return stack;
 }
 
-struct Node * insertatfirst(struct Node *head, int data){
-    struct Node *ptr = (struct Node *)malloc(sizeof(struct Node));
-    ptr->data = data;
-    ptr->next = head;
-    return ptr;
+int isEmpty(struct Stack* stack)
+{
+	return stack->top == -1;
 }
 
-struct Node * insertatindex(struct Node *head, int data, int index){
-    int i=0;
-    struct Node *ptr = (struct Node *)malloc(sizeof(struct Node));
-    struct Node *p =head;
-    ptr->data=data;
-    while(i<=index-1){
-        p=p->next;
-        i++;
-    }
-    ptr->next=p->next;
-    p->next=ptr;
-    return head;
+char peek(struct Stack* stack)
+{
+	return stack->array[stack->top];
 }
 
-struct Node * insertatlast(struct Node *head, int data){
-    struct Node *ptr = (struct Node *)malloc(sizeof(struct Node));
-    struct Node *p = head;
-    while(p->next!=NULL){
-        p = p->next;
-    }
-    p->next = ptr;
-    ptr->data=data;
-    ptr->next = NULL;
-    return head;
+char pop(struct Stack* stack)
+{
+	if (!isEmpty(stack))
+		return stack->array[stack->top--];
+	return '$';
 }
 
-struct Node * deleteatfirst(struct Node *head){
-    struct Node *p = head;
-    head=head->next;
-    free(p);
-    return head;
+void push(struct Stack* stack, char op)
+{
+	stack->array[++stack->top] = op;
 }
 
-struct Node * deleteatindex(struct Node *head, int index){
-    int i =0;
-    struct Node *p = head;
-    struct Node *q = head->next;
-    while(i>=index-1){
-        p=p->next;
-        q=q->next;
-    }
-    p->next=q->next;
-    free(q);
-    return head;
+// A utility function to check if
+// the given character is operand
+int isOperand(char ch)
+{
+	return (ch >= 'a' && ch <= 'z')
+		|| (ch >= 'A' && ch <= 'Z');
 }
 
-struct Node *deleteatlast(struct Node *head){
-    struct Node *p = head;
-    struct Node *q = head->next;
-    while(q->next!=NULL){
-        p=p->next;
-        q=q->next;
-    }
-    p->next=NULL;
-    free(q);
-    return head;
+// A utility function to return
+// precedence of a given operator
+// Higher returned value means
+// higher precedence
+int Prec(char ch)
+{
+	switch (ch) {
+	case '+':
+	case '-':
+		return 1;
+
+	case '*':
+	case '/':
+		return 2;
+
+	case '^':
+		return 3;
+	}
+	return -1;
 }
 
+// The main function that
+// converts given infix expression
+// to postfix expression.
+int infixToPostfix(char* exp)
+{
+	int i, k;
+
+	// Create a stack of capacity
+	// equal to expression size
+	struct Stack* stack = createStack(strlen(exp));
+	if (!stack) // See if stack was created successfully
+		return -1;
+
+	for (i = 0, k = -1; exp[i]; ++i) {
+
+		// If the scanned character is
+		// an operand, add it to output.
+		if (isOperand(exp[i]))
+			exp[++k] = exp[i];
+
+		// If the scanned character is an
+		// ‘(‘, push it to the stack.
+		else if (exp[i] == '(')
+			push(stack, exp[i]);
+
+		// If the scanned character is an ‘)’,
+		// pop and output from the stack
+		// until an ‘(‘ is encountered.
+		else if (exp[i] == ')') {
+			while (!isEmpty(stack) && peek(stack) != '(')
+				exp[++k] = pop(stack);
+			if (!isEmpty(stack) && peek(stack) != '(')
+				return -1; // invalid expression
+			else
+				pop(stack);
+		}
+
+		else // an operator is encountered
+		{
+			while (!isEmpty(stack)
+				&& Prec(exp[i]) <= Prec(peek(stack)))
+				exp[++k] = pop(stack);
+			push(stack, exp[i]);
+		}
+	}
+
+	// pop all the operators from the stack
+	while (!isEmpty(stack))
+		exp[++k] = pop(stack);
+
+	exp[++k] = '\0';
+	printf("%s", exp);
+}
+
+// Driver's code
 int main()
 {
-    struct Node *head = (struct Node *)malloc(sizeof(struct Node));
-    struct Node *second = (struct Node *)malloc(sizeof(struct Node));
-    struct Node *third = (struct Node *)malloc(sizeof(struct Node));
-    struct Node *forth = (struct Node *)malloc(sizeof(struct Node));
-    
-    head->data=11;
-    head->next=second;
-    
-    second->data=22;
-    second->next=third;
-    
-    third->data=33;
-    third->next=forth;
-    
-    forth->data=44;
-    forth->next=NULL;
-    
-    display(head);
-    cout<<"---------------------------------------"<<endl;
-    //head=insertatfirst(head,99);
-    //head=insertatindex(head,99,2);
-    //head=insertatlast(head,99);
-    //head=deleteatfirst(head);
-    //head=deleteatindex(head,2);
-    //head=deleteatlast(head);
-    display(head);
-
-    return 0;
-}
-
-
-#include <iostream>
-using namespace std;
-int stack[100], n=100, top=-1;
-void push(int val) {
-   if(top>=n-1)
-   cout<<"Stack Overflow"<<endl;
-   else {
-      top++;
-      stack[top]=val;
-   }
-}
-void pop() {
-   if(top<=-1)
-   cout<<"Stack Underflow"<<endl;
-   else {
-      cout<<"The popped element is "<< stack[top] <<endl;
-      top--;
-   }
-}
-void display() {
-   if(top>=0) {
-      cout<<"Stack elements are:";
-      for(int i=top; i>=0; i--)
-      cout<<stack[i]<<" ";
-      cout<<endl;
-   } else
-   cout<<"Stack is empty";
+	char exp[] = "a+b*(c^d-e)^(f+g*h)-i";
+	
+	// Function call
+	infixToPostfix(exp);
+	return 0;
 }
