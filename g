@@ -1,4 +1,18 @@
-// C program to convert infix expression to postfix
+struct Node *addele(struct Node *head,int val){
+    struct Node *ptr = (struct Node *)malloc(sizeof(struct Node));
+    ptr->data=val;
+    struct Node *temp = head;
+    if(head==NULL){
+        head=ptr;
+        return head;
+    }
+    while(temp->next!=NULL){
+        temp=temp->next;
+    }
+    temp->next=ptr;
+    ptr->next=NULL;
+    return head;
+}// C program to convert infix expression to postfix
 
 #include <stdio.h>
 #include <stdlib.h>
